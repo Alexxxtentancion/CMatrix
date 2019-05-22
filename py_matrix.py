@@ -24,4 +24,6 @@ x = [[1,2,5],[3,4,5]]
 y = [[1,2],[3,4],[3,3]]
 
 if __name__ == '__main__':
-    print(matrixmult(x,y))
+    #print(matrixmult(x,y))
+    l = []
+    print(l[2])

@@ -1,32 +1,17 @@
 #include <Python.h>
 #include<stdio.h>
-//#include "Header.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>
 using namespace std;
+// Function 1: A simple 'hello world' function
 
 typedef struct {
 	PyObject_HEAD
 		vector<vector<float>> v;
 
 } myMatrixObject;
-
-PyMODINIT_FUNC PyInit_myMatrix(void);
-static PyObject* myMatr_transpose(myMatrixObject* self);
-static void myMatrix_dealloc(myMatrixObject* o);
-static PyObject* matr_new(PyTypeObject* type, PyObject* args, PyObject* kwds);
-static int matr_init(myMatrixObject* self, PyObject* args);
-static PyObject* matr_repr(myMatrixObject* self);
-static Py_ssize_t matrix_length(myMatrixObject* self);
-static PyObject* myMatr_transpose(myMatrixObject* self);
-static PyObject* myMatr_add(myMatrixObject* self, PyObject* args);
-static PyObject* myMatr_mul(myMatrixObject* self, PyObject* args);
-static PyObject* myMatr_add_val(myMatrixObject* m, PyObject* args);
-static PyObject* myMatr_div_val(myMatrixObject* self,PyObject* args);
-static int matr_contains(myMatrixObject* self, PyObject* arg);
-static PyObject* get_by_coordinates(myMatrixObject* self, PyObject* arg);
-static PyObject* matr_str(myMatrixObject* self);
+#include "Header.h"
 
 static PyMethodDef matr_methods[] = {
 	{ "add", (PyCFunction)myMatr_add, METH_VARARGS, "Method" },
@@ -119,14 +104,13 @@ static int matr_init(myMatrixObject* self, PyObject* args)
 	PyObject* l;
 	PyObject* li;
 	Py_ssize_t nm, nl;
+	Py_ssize_t size_check = 0;
 	if (!PyArg_ParseTuple(args, "O!", &PyList_Type, &m))
 	{
 		PyErr_SetString(PyExc_TypeError, "parameter must be a list.");
 		return -1;
 	}
 	nm = PyList_Size(m);
-	Py_ssize_t els_on_row_count = 0;
-
 	for (int i = 0; i < nm; i++)
 	{
 		l = PyList_GetItem(m, i);
@@ -136,15 +120,15 @@ static int matr_init(myMatrixObject* self, PyObject* args)
 			nl = PyList_Size(l);
 
 			if (nl == 0) {
-				PyErr_SetString(PyExc_TypeError, "list cannot be empty");
+				PyErr_SetString(PyExc_IndexError, "Empty list");
 				return -1;
 			}
 
-			if (els_on_row_count == 0) {
-				els_on_row_count = nl;
+			if (size_check == 0) {
+				size_check = nl;
 			}
 			else {
-				if (nl != els_on_row_count) {
+				if (nl != size_check) {
 					PyErr_SetString(PyExc_TypeError, "matrix must have fixed els count on every row");
 					return -1;
 				}
@@ -156,7 +140,7 @@ static int matr_init(myMatrixObject* self, PyObject* args)
 				Py_INCREF(li);
 				if (!PyLong_Check(li) && !PyFloat_Check(li))
 				{
-					PyErr_SetString(PyExc_TypeError, "list items must be integers or float.");
+					PyErr_SetString(PyExc_TypeError, "list contains only integers as float values.");
 					return -1;
 				}
 				Py_DECREF(li);
@@ -164,7 +148,7 @@ static int matr_init(myMatrixObject* self, PyObject* args)
 		}
 		else
 		{
-			PyErr_SetString(PyExc_TypeError, "list items must be integers or float.");
+			PyErr_SetString(PyExc_TypeError, "argument must be a list.");
 			return -1;
 		}
 		Py_DECREF(l);
@@ -226,9 +210,8 @@ matr_repr(myMatrixObject* self)
 		{
 			goto error;
 		}
-		for (auto l : el) {
-
-			el_str = PyUnicode_FromFormat("%d ", l);
+		for (double l : el) {
+			el_str = PyUnicode_FromFormat("%x", l);
 			if (_PyUnicodeWriter_WriteStr(&writer, el_str)) {
 				Py_DECREF(el_str);
 				goto error;
@@ -326,11 +309,6 @@ static PyObject* myMatr_add(myMatrixObject* self, PyObject* args)
 		PyErr_SetString(PyExc_TypeError, "parameter must be a matrix type.");
 		return NULL;
 	}
-	/*if ((!PyArg_ParseTuple(m2, "O", &matr_b)))
-	{
-		PyErr_SetString(PyExc_TypeError, "parameter must be a matrix type.");
-		return NULL;
-	}*/
 	myMatrixObject* matrA = (myMatrixObject*)matr_a;
 	myMatrixObject* matrB = (myMatrixObject*)matr_b;
 	PyObject* new_matrix = matr_new(&matr_Type, NULL, NULL);
@@ -363,6 +341,7 @@ static PyObject* myMatr_mul(myMatrixObject* self, PyObject* args)
 	if (matrA->v.size() != matrB->v[0].size())
 	{
 		PyErr_SetString(PyExc_ArithmeticError, "Number of columns of first matrix must me equal to number of raws of second matrix.");
+		return NULL;
 	}
 	else
 	{
