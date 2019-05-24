@@ -3,6 +3,12 @@
 #include <vector>
 using namespace std;
 
+typedef struct {
+	PyObject_HEAD
+		vector<vector<float>> v;
+
+} myMatrixObject;
+
 
 PyMODINIT_FUNC PyInit_myMatrix(void);
 static PyObject* myMatr_transpose(myMatrixObject* self);

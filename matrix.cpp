@@ -3,15 +3,11 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-using namespace std;
-// Function 1: A simple 'hello world' function
-
-typedef struct {
-	PyObject_HEAD
-		vector<vector<float>> v;
-
-} myMatrixObject;
 #include "Header.h"
+using namespace std;
+
+
+
 
 static PyMethodDef matr_methods[] = {
 	{ "add", (PyCFunction)myMatr_add, METH_VARARGS, "Method" },
@@ -211,7 +207,7 @@ matr_repr(myMatrixObject* self)
 			goto error;
 		}
 		for (double l : el) {
-			el_str = PyUnicode_FromFormat("%x", l);
+			el_str = PyUnicode_FromFormat("%f", l);
 			if (_PyUnicodeWriter_WriteStr(&writer, el_str)) {
 				Py_DECREF(el_str);
 				goto error;
@@ -279,6 +275,7 @@ matrix_length(myMatrixObject* self)
 }
 static PyObject* myMatr_transpose(myMatrixObject* self)
 {
+
 	if (self->v.empty())
 	{
 		PyErr_SetString(PyExc_ValueError, "matrix is empty");
@@ -288,16 +285,18 @@ static PyObject* myMatr_transpose(myMatrixObject* self)
 	{
 		PyObject* new_matrix = matr_new(&matr_Type, NULL, NULL);
 		myMatrixObject* temp = (myMatrixObject*)new_matrix;
-		temp->v.resize(self->v.size(), vector<float>(self->v[0].size()));
-		for (int i = 0; i < self->v.size(); i++)
+		temp->v.resize(self->v[0].size(), vector<float>(self->v.size()));
+
+		for (int i = 0; i < self->v[0].size(); i++)
 		{
-			for (int j = 0; j < self->v[i].size(); j++)
+			for (int j = 0; j < self->v.size(); j++)
 			{
 				temp->v[i][j] = self->v[j][i];
 			}
 		}
 		return (PyObject*)temp;
 	}
+	//return (PyObject*)temp;
 }
 
 static PyObject* myMatr_add(myMatrixObject* self, PyObject* args)
@@ -318,7 +317,7 @@ static PyObject* myMatr_add(myMatrixObject* self, PyObject* args)
 	{
 		for (int j = 0; j < matrA->v[i].size(); j++)
 		{
-			temp->v[i][j] = matrA->v[j][i] + matrB->v[i][j];
+			temp->v[i][j] = matrA->v[i][j] + matrB->v[i][j];
 		}
 	}
 	return (PyObject*)temp;
@@ -328,7 +327,7 @@ static PyObject* myMatr_mul(myMatrixObject* self, PyObject* args)
 {
 	PyObject* matr_a;
 	PyObject* matr_b;
-	if ((!PyArg_ParseTuple(args, "OO",&matr_a,&matr_b)))
+	if ((!PyArg_ParseTuple(args, "OO", &matr_a, &matr_b)))
 	{
 		PyErr_SetString(PyExc_TypeError, "parameter must be a matrix type.");
 		return NULL;
@@ -350,7 +349,7 @@ static PyObject* myMatr_mul(myMatrixObject* self, PyObject* args)
 		{
 			for (int j = 0; j < matrB->v[0].size(); j++)
 			{
-
+				temp->v[i][j] = 0;
 				for (int k = 0; k < matrA->v[0].size(); k++)
 				{
 					temp->v[i][j] += matrA->v[i][k] * matrB->v[k][j];

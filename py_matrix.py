@@ -1,3 +1,6 @@
+import myMatrix
+
+
 def matrixmult(m1,m2):
     s=0     #сумма
     t=[]    #временная матрица
@@ -24,6 +27,7 @@ x = [[1,2,5],[3,4,5]]
 y = [[1,2],[3,4],[3,3]]
 
 if __name__ == '__main__':
-    #print(matrixmult(x,y))
-    l = []
-    print(l[2])
+    m1 = myMatrix.Matrix([[1,2,3],[12,3,4]])
+    m2 = myMatrix.Matrix([[1, 2, 3], [12, 3, 4]])
+    m3 = myMatrix.add(m1,m2)
+    print(str(m3))
